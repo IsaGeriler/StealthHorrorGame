@@ -1,0 +1,49 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "GameFramework/Actor.h"
+#include "Components/StaticMeshComponent.h"
+#include "Kismet/KismetMaterialLibrary.h"
+#include "Kismet/GameplayStatics.h"
+#include "Materials/MaterialParameterCollection.h"
+#include "Logging/LogMacros.h"
+#include "StealthHorrorEntity.generated.h"
+
+UCLASS()
+class STEALTHHORRORGAME_API AStealthHorrorEntity : public AActor
+{
+	GENERATED_BODY()
+
+protected:
+
+	/** Entity Mesh and MPC Declarations */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Entity")
+	class UStaticMeshComponent* EntityMesh;
+
+	UPROPERTY(EditAnywhere, Category = "Entity")
+	class UMaterialParameterCollection* PlayerStateMPC;
+
+	/** Result - Entity's World Position Vector */
+	FVector EntityWorldPos;
+
+	UPROPERTY(EditAnywhere, Category = "Entity")
+	float GlideStillTreshold = 0.1f;
+
+	UPROPERTY(EditAnywhere, Category = "Entity")
+	float GlideSpeed = 2.f;
+	
+public:	
+	// Sets default values for this actor's properties
+	AStealthHorrorEntity();
+
+protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
+public:	
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
+};
