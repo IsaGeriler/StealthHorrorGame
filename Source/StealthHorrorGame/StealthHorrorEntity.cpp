@@ -1,6 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "StealthHorrorEntity.h"
+#include "Kismet/GameplayStatics.h"
+#include "DrawDebugHelpers.h"
+#include "StealthGameMode.h"
 
 // Sets default values
 AStealthHorrorEntity::AStealthHorrorEntity()
@@ -18,13 +21,16 @@ AStealthHorrorEntity::AStealthHorrorEntity()
 void AStealthHorrorEntity::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	bPlayerCaught = false;
+	UE_LOG(LogTemp, Warning, TEXT("Entity BeginPlay ran, bPlayerCaught reset to %d"), bPlayerCaught);
 }
 
 // Called every frame
 void AStealthHorrorEntity::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	GEngine->AddOnScreenDebugMessage(1, 0.f, FColor::Green, FString::Printf(TEXT("Tick running, bPlayerCaught0%d"), bPlayerCaught));
 
 	// Check if the Material Parameter Collection Exists in the First Place...
 	if (PlayerStateMPC)
@@ -36,25 +42,80 @@ void AStealthHorrorEntity::Tick(float DeltaTime)
 		UKismetMaterialLibrary::SetVectorParameterValue(GetWorld(), PlayerStateMPC, FName("EntityCentre"), FLinearColor(EntityWorldPos));
 	}
 
+	// Stop if player is caught
+	if (bPlayerCaught) 
+	{
+		GEngine->AddOnScreenDebugMessage(2, 0.f, FColor::Red, FString::Printf(TEXT("EXIT: bPlayerCaught0%d"), bPlayerCaught));
+		return;
+	}
+
 	// Entity Logic (Gliding/Close Distance towards player)
 	// Get Player Pawn
 	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
-
-	if (PlayerPawn)
+	if (!PlayerPawn)
 	{
-		// Get Player Position and Speed
-		const FVector PlayerPos = PlayerPawn->GetActorLocation();
-		float PlayerSpeed = 0.f;
+		GEngine->AddOnScreenDebugMessage(3, 0.f, FColor::Red, FString::Printf(TEXT("EXIT: No Player")));
+		return;
+	}
 
-		if (PlayerStateMPC)
+	// Get Player/Enemy Position and Speed
+	const FVector PlayerPos = PlayerPawn->GetActorLocation();
+	const FVector EntityPos = GetActorLocation();
+	const float DistanceToPlayer = FVector::Dist(EntityPos, PlayerPos);
+	UE_LOG(LogTemp, Warning, TEXT("Dist=%f, CatchRadius=%f"), DistanceToPlayer, CatchRadius);
+
+	if (DistanceToPlayer <= CatchRadius && !bPlayerCaught)
+	{
+		bPlayerCaught = true;
+		UE_LOG(LogTemp, Warning, TEXT("Caught Player!"));
+		AStealthGameMode* GameMode = Cast<AStealthGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+		
+		if (GameMode)
 		{
-			PlayerSpeed = UKismetMaterialLibrary::GetScalarParameterValue(GetWorld(), PlayerStateMPC, FName("PlayerSpeed"));
-
-			if (PlayerSpeed > GlideStillTreshold)
-			{
-				const FVector NewPlayerPos = FMath::VInterpTo(GetActorLocation(), PlayerPos, DeltaTime, GlideSpeed);
-				SetActorLocation(NewPlayerPos);
-			}
+			GameMode->HandlePlayerCaught();
 		}
+		return;
+	}
+
+	// Line Tracing for Visibility Check
+	FHitResult HitResult;
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+	QueryParams.AddIgnoredActor(PlayerPawn);
+
+	const bool bHasLineOfSight = GetWorld()->LineTraceSingleByChannel(
+		HitResult,
+		EntityPos,
+		PlayerPos,
+		ECC_Visibility,
+		QueryParams
+	);
+
+	const bool bPlayerVisible = !bHasLineOfSight;
+	GEngine->AddOnScreenDebugMessage(5, 0.f, FColor::Yellow, FString::Printf(TEXT("Line Trace, hit=%d"), bHasLineOfSight));
+	
+	DrawDebugLine(
+		GetWorld(),
+		EntityPos,
+		PlayerPos,
+		bPlayerVisible ? FColor::Green : FColor::Red,
+		false,  // Not persistent
+		-1.f,   // One frame duration
+		0,
+		5.f     // Thickness
+	);
+
+	// Player Speed Check for Glide
+	float PlayerSpeed = 0.f;
+
+	if (PlayerStateMPC)
+	{
+		PlayerSpeed = UKismetMaterialLibrary::GetScalarParameterValue(GetWorld(), PlayerStateMPC, FName("PlayerSpeed"));
+	}
+
+	if (bPlayerVisible && PlayerSpeed < GlideStillTreshold)
+	{
+		const FVector NewPlayerPos = FMath::VInterpTo(EntityPos, PlayerPos, DeltaTime, GlideSpeed);
+		SetActorLocation(NewPlayerPos);
 	}
 }

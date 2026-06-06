@@ -57,7 +57,7 @@ protected:
 
 	/** Displayed speed catch-up rate to actual speed */
 	UPROPERTY(EditAnywhere, Category="Stealth")
-	float SpeedInterpolationRate = 5.f;
+	float SpeedInterpolationRate = 6.f;
 
 	/** Result - Player's Smoothed (Interpolated) Speed */
 	float SmoothedSpeed = 0.f;
@@ -71,7 +71,7 @@ protected:
 
 	/** Resolve Duration for Denoising */
 	UPROPERTY(EditAnywhere, Category="Stealth")
-	float ResolveDuration = 2.f;
+	float ResolveDuration = 1.f;
 
 public:
 	AStealthHorrorGameCharacter();

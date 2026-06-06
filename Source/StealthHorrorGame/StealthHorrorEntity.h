@@ -27,12 +27,16 @@ protected:
 
 	/** Result - Entity's World Position Vector */
 	FVector EntityWorldPos;
+	bool bPlayerCaught = false;
 
 	UPROPERTY(EditAnywhere, Category = "Entity")
-	float GlideStillTreshold = 0.1f;
+	float GlideStillTreshold = 20.f;
 
 	UPROPERTY(EditAnywhere, Category = "Entity")
-	float GlideSpeed = 2.f;
+	float GlideSpeed = 1.f;
+
+	UPROPERTY(EditAnywhere, Category = "Entity")
+	float CatchRadius = 100.f;
 	
 public:	
 	// Sets default values for this actor's properties
