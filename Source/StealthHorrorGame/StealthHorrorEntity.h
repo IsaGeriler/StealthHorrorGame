@@ -37,6 +37,23 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Entity")
 	float CatchRadius = 100.f;
+
+	/** MID */
+	UPROPERTY(EditAnywhere, Category = "Entity")
+	class UMaterialInterface* EntityMaterial;
+
+	UPROPERTY()
+	class UMaterialInstanceDynamic* EntityMID;
+
+	/** Some of the variables originally from material node, carried here */
+	UPROPERTY(EditAnywhere, Category = "Entity")
+	float EntityRadius = 40.f;
+	
+	UPROPERTY(EditAnywhere, Category = "Entity")
+	float MeshMeltAmount = 15.f;
+
+	UPROPERTY(EditAnywhere, Category = "Entity")
+	FVector EntityOffset = FVector(14.f, 8.f, 22.f);
 	
 public:	
 	// Sets default values for this actor's properties

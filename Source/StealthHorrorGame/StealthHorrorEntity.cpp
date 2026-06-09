@@ -23,6 +23,25 @@ void AStealthHorrorEntity::BeginPlay()
 	Super::BeginPlay();
 	bPlayerCaught = false;
 	UE_LOG(LogTemp, Warning, TEXT("Entity BeginPlay ran, bPlayerCaught reset to %d"), bPlayerCaught);
+
+	// Execute MID if material and mesh exists
+	if (EntityMesh && EntityMaterial)
+	{
+		// Create MID from material and apply to mesh
+		EntityMID = EntityMesh->CreateDynamicMaterialInstance(0, EntityMaterial);
+		UE_LOG(LogTemp, Warning, TEXT("MID Write: %s, MID Valid=%d"), *GetActorLocation().ToString(), EntityMID != nullptr);
+		
+		if (EntityMID)
+		{
+			EntityMID->SetScalarParameterValue(FName("Radius"), EntityRadius);
+			EntityMID->SetScalarParameterValue(FName("Melt"), MeshMeltAmount);
+			EntityMID->SetVectorParameterValue(FName("Offset"), FLinearColor(EntityOffset));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("MID is null"));
+	}
 }
 
 // Called every frame
@@ -33,13 +52,20 @@ void AStealthHorrorEntity::Tick(float DeltaTime)
 	GEngine->AddOnScreenDebugMessage(1, 0.f, FColor::Green, FString::Printf(TEXT("Tick running, bPlayerCaught0%d"), bPlayerCaught));
 
 	// Check if the Material Parameter Collection Exists in the First Place...
-	if (PlayerStateMPC)
-	{
-		// Get Entity Position
-		EntityWorldPos = GetActorLocation();
+	//if (PlayerStateMPC)
+	//{
+	//	// Get Entity Position
+	//	EntityWorldPos = GetActorLocation();
 
-		// Set the Vector
-		UKismetMaterialLibrary::SetVectorParameterValue(GetWorld(), PlayerStateMPC, FName("EntityCentre"), FLinearColor(EntityWorldPos));
+	//	// Set the Vector
+	//	UKismetMaterialLibrary::SetVectorParameterValue(GetWorld(), PlayerStateMPC, FName("EntityCentre"), FLinearColor(EntityWorldPos));
+	//}
+
+	if (EntityMID)
+	{
+		// Update Entity's Position in MID instead of MPC
+		EntityWorldPos = GetActorLocation();
+		EntityMID->SetVectorParameterValue(FName("EntityCentre"), FLinearColor(EntityWorldPos));
 	}
 
 	// Stop if player is caught
