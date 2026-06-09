@@ -54,6 +54,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Entity")
 	FVector EntityOffset = FVector(14.f, 8.f, 22.f);
+
+	UPROPERTY(EditAnywhere, Category = "Entity")
+	FVector EntityColour = FVector(0.9f, 0.1f, 0.1f);
 	
 public:	
 	// Sets default values for this actor's properties

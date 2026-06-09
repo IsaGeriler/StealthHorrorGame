@@ -36,11 +36,13 @@ void AStealthHorrorEntity::BeginPlay()
 			EntityMID->SetScalarParameterValue(FName("Radius"), EntityRadius);
 			EntityMID->SetScalarParameterValue(FName("Melt"), MeshMeltAmount);
 			EntityMID->SetVectorParameterValue(FName("Offset"), FLinearColor(EntityOffset));
+			EntityMID->SetVectorParameterValue(FName("Albedo"), FLinearColor(EntityColour));
+			UE_LOG(LogTemp, Warning, TEXT("MID parameters are all set!"));
 		}
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("MID is null"));
+		UE_LOG(LogTemp, Warning, TEXT("MID is null!"));
 	}
 }
 
