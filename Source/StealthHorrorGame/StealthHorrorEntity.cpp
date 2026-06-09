@@ -21,6 +21,7 @@ AStealthHorrorEntity::AStealthHorrorEntity()
 void AStealthHorrorEntity::BeginPlay()
 {
 	Super::BeginPlay();
+	LastKnownPlayerPos = GetActorLocation();
 	bPlayerCaught = false;
 	UE_LOG(LogTemp, Warning, TEXT("Entity BeginPlay ran, bPlayerCaught reset to %d"), bPlayerCaught);
 
@@ -58,7 +59,7 @@ void AStealthHorrorEntity::Tick(float DeltaTime)
 	//{
 	//	// Get Entity Position
 	//	EntityWorldPos = GetActorLocation();
-
+	//
 	//	// Set the Vector
 	//	UKismetMaterialLibrary::SetVectorParameterValue(GetWorld(), PlayerStateMPC, FName("EntityCentre"), FLinearColor(EntityWorldPos));
 	//}
@@ -92,7 +93,15 @@ void AStealthHorrorEntity::Tick(float DeltaTime)
 	const float DistanceToPlayer = FVector::Dist(EntityPos, PlayerPos);
 	UE_LOG(LogTemp, Warning, TEXT("Dist=%f, CatchRadius=%f"), DistanceToPlayer, CatchRadius);
 
-	if (DistanceToPlayer <= CatchRadius && !bPlayerCaught)
+	// Player Speed Check for Glide
+	float PlayerSpeed = 0.f;
+
+	if (PlayerStateMPC)
+	{
+		PlayerSpeed = UKismetMaterialLibrary::GetScalarParameterValue(GetWorld(), PlayerStateMPC, FName("PlayerSpeed"));
+	}
+
+	if (DistanceToPlayer <= CatchRadius && !bPlayerCaught && bCanCatchPlayer)
 	{
 		bPlayerCaught = true;
 		UE_LOG(LogTemp, Warning, TEXT("Caught Player!"));
@@ -121,7 +130,7 @@ void AStealthHorrorEntity::Tick(float DeltaTime)
 
 	const bool bPlayerVisible = !bHasLineOfSight;
 	GEngine->AddOnScreenDebugMessage(5, 0.f, FColor::Yellow, FString::Printf(TEXT("Line Trace, hit=%d"), bHasLineOfSight));
-	
+
 	DrawDebugLine(
 		GetWorld(),
 		EntityPos,
@@ -133,17 +142,22 @@ void AStealthHorrorEntity::Tick(float DeltaTime)
 		5.f     // Thickness
 	);
 
-	// Player Speed Check for Glide
-	float PlayerSpeed = 0.f;
-
-	if (PlayerStateMPC)
+	if (bPlayerVisible)
 	{
-		PlayerSpeed = UKismetMaterialLibrary::GetScalarParameterValue(GetWorld(), PlayerStateMPC, FName("PlayerSpeed"));
+		// Reset TimeSinceLastSeenPlayer
+		TimeSinceLastSeenPlayer = 0.f;
+		if (PlayerSpeed < GlideStillTreshold)
+		{
+			const FVector NewPlayerPos = FMath::VInterpTo(EntityPos, PlayerPos, DeltaTime, GlideSpeed);
+			SetActorLocation(NewPlayerPos);
+		}
 	}
-
-	if (bPlayerVisible && PlayerSpeed < GlideStillTreshold)
+	else
 	{
-		const FVector NewPlayerPos = FMath::VInterpTo(EntityPos, PlayerPos, DeltaTime, GlideSpeed);
-		SetActorLocation(NewPlayerPos);
+		TimeSinceLastSeenPlayer += DeltaTime;
+		if (TimeSinceLastSeenPlayer >= ReturnDelay)
+		{
+			SetActorLocation(FMath::VInterpTo(GetActorLocation(), LastKnownPlayerPos, DeltaTime, ReturnSpeed));
+		}
 	}
 }

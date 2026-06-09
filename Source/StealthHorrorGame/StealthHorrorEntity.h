@@ -30,6 +30,9 @@ protected:
 	bool bPlayerCaught = false;
 
 	UPROPERTY(EditAnywhere, Category = "Entity")
+	bool bCanCatchPlayer = true;
+
+	UPROPERTY(EditAnywhere, Category = "Entity")
 	float GlideStillTreshold = 20.f;
 
 	UPROPERTY(EditAnywhere, Category = "Entity")
@@ -57,6 +60,16 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Entity")
 	FVector EntityColour = FVector(0.9f, 0.1f, 0.1f);
+
+	/** Address the gap where player idle but entity can't see player */
+	UPROPERTY(EditAnywhere, Category = "Entity")
+	float ReturnDelay = 3.f;
+
+	UPROPERTY(EditAnywhere, Category = "Entity")
+	float ReturnSpeed = 1.f;
+
+	FVector LastKnownPlayerPos;
+	float TimeSinceLastSeenPlayer = 0.f;
 	
 public:	
 	// Sets default values for this actor's properties
