@@ -135,6 +135,21 @@ void AStealthHorrorGameCharacter::Tick(float DeltaTime)
 	const float Speed = GetVelocity().Size2D();
 	SmoothedSpeed = FMath::FInterpTo(SmoothedSpeed, Speed, DeltaTime, SpeedInterpolationRate);
 	
+	// Play Footstep Sound Based on Speed
+	if (Speed > 50.f)
+	{
+		DistanceTraveledSinceLastFootstep += (Speed * DeltaTime);
+		if (PlayerFootsteps && DistanceTraveledSinceLastFootstep >= FootstepInterval)
+		{
+			UGameplayStatics::PlaySoundAtLocation(this, PlayerFootsteps, GetActorLocation());
+			DistanceTraveledSinceLastFootstep = 0.f;
+		}
+	}
+	else
+	{
+		DistanceTraveledSinceLastFootstep = 0.f;
+	}
+
 	// Set the Scalar
 	UKismetMaterialLibrary::SetScalarParameterValue(GetWorld(), PlayerStateMPC, FName("PlayerSpeed"), SmoothedSpeed);
 

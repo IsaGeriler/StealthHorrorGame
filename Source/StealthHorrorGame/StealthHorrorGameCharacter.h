@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "Kismet/KismetMaterialLibrary.h"
+#include "Kismet/GameplayStatics.h"
 #include "Materials/MaterialParameterCollection.h"
 #include "StealthHorrorGameCharacter.generated.h"
 
@@ -73,6 +74,14 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Stealth")
 	float ResolveDuration = 1.f;
 
+	/** Player Footsteps */
+	UPROPERTY(EditAnywhere, Category="Audio")
+	USoundBase* PlayerFootsteps;
+
+	UPROPERTY(EditAnywhere, Category = "Audio")
+	float FootstepInterval = 300.f;
+	float DistanceTraveledSinceLastFootstep = 0.f;
+
 public:
 	AStealthHorrorGameCharacter();
 
@@ -118,4 +127,3 @@ public:
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
 
 };
-
