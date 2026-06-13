@@ -70,6 +70,9 @@ protected:
 
 	FVector LastKnownPlayerPos;
 	float TimeSinceLastSeenPlayer = 0.f;
+
+	UPROPERTY(EditAnywhere, Category = "Entity")
+	float CreepSpeed = 0.2;
 	
 public:	
 	// Sets default values for this actor's properties

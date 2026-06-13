@@ -139,18 +139,22 @@ void AStealthHorrorEntity::Tick(float DeltaTime)
 		false,  // Not persistent
 		-1.f,   // One frame duration
 		0,
-		5.f     // Thickness
+		5.f     // Thickness adjusted by Aspect Ratio
 	);
 
 	if (bPlayerVisible)
 	{
 		// Reset TimeSinceLastSeenPlayer
 		TimeSinceLastSeenPlayer = 0.f;
-		if (PlayerSpeed < GlideStillTreshold)
-		{
-			const FVector NewPlayerPos = FMath::VInterpTo(EntityPos, PlayerPos, DeltaTime, GlideSpeed);
-			SetActorLocation(NewPlayerPos);
-		}
+		const float EnemySpeed = (PlayerSpeed < GlideStillTreshold) ? GlideSpeed : CreepSpeed;
+		const FVector NewPlayerPos = FMath::VInterpTo(EntityPos, PlayerPos, DeltaTime, EnemySpeed);
+		SetActorLocation(NewPlayerPos);
+		
+		//if (PlayerSpeed < GlideStillTreshold)
+		//{
+		//	const FVector NewPlayerPos = FMath::VInterpTo(EntityPos, PlayerPos, DeltaTime, GlideSpeed);
+		//	SetActorLocation(NewPlayerPos);
+		//}
 	}
 	else
 	{
