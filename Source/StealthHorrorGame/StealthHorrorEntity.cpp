@@ -15,6 +15,10 @@ AStealthHorrorEntity::AStealthHorrorEntity()
 	EntityMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("EntityMesh"));
 	SetRootComponent(EntityMesh);
 
+	// Create Audio Component for the Entity
+	EntityAudio = CreateDefaultSubobject<UAudioComponent>(TEXT("EntityAudio"));
+	EntityAudio->SetupAttachment(RootComponent);
+	EntityAudio->bAutoActivate = true;
 }
 
 // Called when the game starts or when spawned
@@ -38,6 +42,7 @@ void AStealthHorrorEntity::BeginPlay()
 			EntityMID->SetScalarParameterValue(FName("Melt"), MeshMeltAmount);
 			EntityMID->SetVectorParameterValue(FName("Offset"), FLinearColor(EntityOffset));
 			EntityMID->SetVectorParameterValue(FName("Albedo"), FLinearColor(EntityColour));
+			EntityMID->SetScalarParameterValue(FName("Shape"), EntityShapeSDF);
 			UE_LOG(LogTemp, Warning, TEXT("MID parameters are all set!"));
 		}
 	}
@@ -130,7 +135,9 @@ void AStealthHorrorEntity::Tick(float DeltaTime)
 
 	const bool bPlayerVisible = !bHasLineOfSight;
 	GEngine->AddOnScreenDebugMessage(5, 0.f, FColor::Yellow, FString::Printf(TEXT("Line Trace, hit=%d"), bHasLineOfSight));
-
+	
+	#if ENTITY_DEBUG
+	// Draw Debug Line for Visibility Check (turn off for actual gameplay)
 	DrawDebugLine(
 		GetWorld(),
 		EntityPos,
@@ -141,6 +148,7 @@ void AStealthHorrorEntity::Tick(float DeltaTime)
 		0,
 		5.f     // Thickness adjusted by Aspect Ratio
 	);
+	#endif
 
 	if (bPlayerVisible)
 	{

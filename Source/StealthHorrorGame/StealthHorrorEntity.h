@@ -5,11 +5,14 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/AudioComponent.h"
 #include "Kismet/KismetMaterialLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Materials/MaterialParameterCollection.h"
 #include "Logging/LogMacros.h"
 #include "StealthHorrorEntity.generated.h"
+
+#define ENTITY_DEBUG false
 
 UCLASS()
 class STEALTHHORRORGAME_API AStealthHorrorEntity : public AActor
@@ -21,6 +24,9 @@ protected:
 	/** Entity Mesh and MPC Declarations */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Entity")
 	class UStaticMeshComponent* EntityMesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Entity")
+	class UAudioComponent* EntityAudio;
 
 	UPROPERTY(EditAnywhere, Category = "Entity")
 	class UMaterialParameterCollection* PlayerStateMPC;
@@ -60,6 +66,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Entity")
 	FVector EntityColour = FVector(0.9f, 0.1f, 0.1f);
+
+	UPROPERTY(EditAnywhere, Category = "Entity")
+	float EntityShapeSDF = 0.4f;
 
 	/** Address the gap where player idle but entity can't see player */
 	UPROPERTY(EditAnywhere, Category = "Entity")
