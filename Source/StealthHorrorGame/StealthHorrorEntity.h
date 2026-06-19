@@ -82,6 +82,22 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Entity")
 	float CreepSpeed = 0.2;
+
+	/** Scare */
+	UPROPERTY(EditAnywhere, Category = "Scare")
+	float BurstDuration = 0.5f;
+
+	UPROPERTY(EditAnywhere, Category = "Scare")
+	float BurstMultiplier = 2.5f;
+
+	UPROPERTY(EditAnywhere, Category = "Scare")
+	USoundBase* ScareSound;
+
+	UPROPERTY(EditAnywhere, Category = "Scare")
+	float ScareMinDistance = 600.f;
+
+	bool bHadSightLastFrame = false;
+	float BurstTimer = 0.f;
 	
 public:	
 	// Sets default values for this actor's properties

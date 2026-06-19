@@ -134,6 +134,26 @@ void AStealthHorrorEntity::Tick(float DeltaTime)
 	);
 
 	const bool bPlayerVisible = !bHasLineOfSight;
+	const bool bHasGainedSight = bPlayerVisible && !bHadSightLastFrame;
+
+	if (bHasGainedSight)
+	{
+		if (DistanceToPlayer > ScareMinDistance)
+		{
+			BurstTimer = BurstDuration;
+		}
+
+		if (ScareSound)
+		{
+			UGameplayStatics::PlaySoundAtLocation(this, ScareSound, GetActorLocation());
+		}
+	}
+
+	if (BurstTimer > 0.f)
+	{
+		BurstTimer -= DeltaTime;
+	}
+
 	GEngine->AddOnScreenDebugMessage(5, 0.f, FColor::Yellow, FString::Printf(TEXT("Line Trace, hit=%d"), bHasLineOfSight));
 	
 	#if ENTITY_DEBUG
@@ -154,7 +174,8 @@ void AStealthHorrorEntity::Tick(float DeltaTime)
 	{
 		// Reset TimeSinceLastSeenPlayer
 		TimeSinceLastSeenPlayer = 0.f;
-		const float EnemySpeed = (PlayerSpeed < GlideStillTreshold) ? GlideSpeed : CreepSpeed;
+		float EnemySpeed = (PlayerSpeed < GlideStillTreshold) ? GlideSpeed : CreepSpeed;
+		EnemySpeed *= (BurstTimer > 0.f) ? BurstMultiplier : 1.f;
 		const FVector NewPlayerPos = FMath::VInterpTo(EntityPos, PlayerPos, DeltaTime, EnemySpeed);
 		SetActorLocation(NewPlayerPos);
 		
@@ -172,4 +193,6 @@ void AStealthHorrorEntity::Tick(float DeltaTime)
 			SetActorLocation(FMath::VInterpTo(GetActorLocation(), LastKnownPlayerPos, DeltaTime, ReturnSpeed));
 		}
 	}
+
+	bHadSightLastFrame = bPlayerVisible;
 }
