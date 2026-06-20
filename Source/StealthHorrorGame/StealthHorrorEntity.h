@@ -42,7 +42,7 @@ protected:
 	float GlideStillTreshold = 20.f;
 
 	UPROPERTY(EditAnywhere, Category = "Entity")
-	float GlideSpeed = 1.f;
+	float GlideSpeed = 2.f;
 
 	UPROPERTY(EditAnywhere, Category = "Entity")
 	float CatchRadius = 100.f;
@@ -72,16 +72,34 @@ protected:
 
 	/** Address the gap where player idle but entity can't see player */
 	UPROPERTY(EditAnywhere, Category = "Entity")
-	float ReturnDelay = 3.f;
+	float ReturnDelay = 5.f;
 
 	UPROPERTY(EditAnywhere, Category = "Entity")
 	float ReturnSpeed = 1.f;
 
+	// Grace Period
+	UPROPERTY(EditAnywhere, Category = "Entity")
+	float VisiblityGracePeriod = 0.5f;
+
+	// Sense Radius
+	UPROPERTY(EditAnywhere, Category = "Entity")
+	float SenseRadius = 250;
+
 	FVector LastKnownPlayerPos;
+	FVector SpawnLocation;
 	float TimeSinceLastSeenPlayer = 0.f;
+	float VisibilityTimer = 0.f;
+	float FloatTime = 0.f;
 
 	UPROPERTY(EditAnywhere, Category = "Entity")
-	float CreepSpeed = 0.2;
+	float CreepSpeed = 0.5f;
+
+	// Visual Jitter
+	UPROPERTY(EditAnywhere, Category = "Movement")
+	float HoverAmplitude = 10.f;
+
+	UPROPERTY(EditAnywhere, Category = "Movement")
+	float GlitchAmplitude = 25.f;
 
 	/** Scare */
 	UPROPERTY(EditAnywhere, Category = "Scare")
