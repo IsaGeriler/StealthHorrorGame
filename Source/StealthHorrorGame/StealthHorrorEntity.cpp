@@ -244,53 +244,60 @@ void AStealthHorrorEntity::Tick(float DeltaTime)
 	// Movement Vector Location
 	FVector TargetPos = EntityPos;
 
-	if (bPlayerVisible)
+	if (bCanCatchPlayer)
 	{
-		// Reset TimeSinceLastSeenPlayer
-		LastKnownPlayerPos = PlayerPos;
-		TimeSinceLastSeenPlayer = 0.f;
+		if (bPlayerVisible)
+		{
+			// Reset TimeSinceLastSeenPlayer
+			LastKnownPlayerPos = PlayerPos;
+			TimeSinceLastSeenPlayer = 0.f;
 
-		float EnemySpeed = (PlayerSpeed < GlideStillTreshold) ? GlideSpeed : CreepSpeed;
-		EnemySpeed *= (BurstTimer > 0.f) ? BurstMultiplier : 1.f;
-		
-		FVector PlayerVelocity = PlayerPawn->GetVelocity();
-		FVector ExpectedPos = PlayerPos + PlayerVelocity * 0.5f;
-		TargetPos = FMath::VInterpTo(EntityPos, ExpectedPos, DeltaTime, EnemySpeed);
-		
-		//if (PlayerSpeed < GlideStillTreshold)
-		//{
-		//	const FVector NewPlayerPos = FMath::VInterpTo(EntityPos, PlayerPos, DeltaTime, GlideSpeed);
-		//	SetActorLocation(NewPlayerPos);
-		//}
+			float EnemySpeed = (PlayerSpeed < GlideStillTreshold) ? GlideSpeed : CreepSpeed;
+			EnemySpeed *= (BurstTimer > 0.f) ? BurstMultiplier : 1.f;
+
+			FVector PlayerVelocity = PlayerPawn->GetVelocity();
+			FVector ExpectedPos = PlayerPos + PlayerVelocity * 0.5f;
+			TargetPos = FMath::VInterpTo(EntityPos, ExpectedPos, DeltaTime, EnemySpeed);
+
+			//if (PlayerSpeed < GlideStillTreshold)
+			//{
+			//	const FVector NewPlayerPos = FMath::VInterpTo(EntityPos, PlayerPos, DeltaTime, GlideSpeed);
+			//	SetActorLocation(NewPlayerPos);
+			//}
+		}
+		else
+		{
+			TimeSinceLastSeenPlayer += DeltaTime;
+			// Investigate Mode: Go where the player was last seen, then return to that position after a delay
+			if (FVector::Dist(EntityPos, LastKnownPlayerPos) > 50.f && TimeSinceLastSeenPlayer < ReturnDelay)
+			{
+				TargetPos = FMath::VInterpTo(EntityPos, LastKnownPlayerPos, DeltaTime, CreepSpeed);
+			}
+			// Return Mode: After the delay, return to the last spawn location
+			else if (TimeSinceLastSeenPlayer >= ReturnDelay)
+			{
+				TargetPos = FMath::VInterpTo(EntityPos, SpawnLocation, DeltaTime, ReturnSpeed);
+			}
+		}
+
+		// Apply movement after the conditional
+		SetActorLocation(TargetPos);
+
+		// Rotate entity so that it faces direction to be moved at
+		if (FVector::Dist(TargetPos, EntityPos) > 5.f)
+		{
+			FRotator GetRotation = (TargetPos - EntityPos).Rotation();
+			SetActorRotation(FMath::RInterpTo(GetActorRotation(), GetRotation, DeltaTime, 5.f));
+		}
+		else
+		{
+			// Radar Scan
+			AddActorLocalRotation(FRotator(0.f, DeltaTime * 45.f, 0.f));
+		}		
 	}
 	else
 	{
 		TimeSinceLastSeenPlayer += DeltaTime;
-		// Investigate Mode: Go where the player was last seen, then return to that position after a delay
-		if (FVector::Dist(EntityPos, LastKnownPlayerPos) > 50.f && TimeSinceLastSeenPlayer < ReturnDelay)
-		{
-			TargetPos = FMath::VInterpTo(EntityPos, LastKnownPlayerPos, DeltaTime, CreepSpeed);
-		}
-		// Return Mode: After the delay, return to the last spawn location
-		else if (TimeSinceLastSeenPlayer >= ReturnDelay)
-		{
-			TargetPos = FMath::VInterpTo(EntityPos, SpawnLocation, DeltaTime, ReturnSpeed);
-		}
-	}
-
-	// Apply movement after the conditional
-	SetActorLocation(TargetPos);
-
-	// Rotate entity so that it faces direction to be moved at
-	if (FVector::Dist(TargetPos, EntityPos) > 5.f)
-	{
-		FRotator GetRotation = (TargetPos - EntityPos).Rotation();
-		SetActorRotation(FMath::RInterpTo(GetActorRotation(), GetRotation, DeltaTime, 5.f));
-	}
-	else
-	{
-		// Radar Scan
-		AddActorLocalRotation(FRotator(0.f, DeltaTime * 45.f, 0.f));
 	}
 
 	// Ramp up Audio
