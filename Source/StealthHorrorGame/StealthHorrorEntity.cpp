@@ -237,7 +237,7 @@ void AStealthHorrorEntity::Tick(float DeltaTime)
 		false,  // Not persistent
 		-1.f,   // One frame duration
 		0,
-		5.f     // Thickness adjusted by Aspect Ratio
+		5.f     // Thickness of the line
 	);
 	#endif
 
